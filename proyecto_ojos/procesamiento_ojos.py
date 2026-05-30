@@ -26,9 +26,11 @@ cap = cv2.VideoCapture('vpregunta1.mp4')
 
 # Variables para medir la "persistencia" (medio segundo)
 tiempo_necesario = 0.5
+tiempo_minimo_encendido = 1.0
 estado_actual = "CENTRO"
 tiempo_inicio_mirada = 0
 orden_enviada = False
+tiempo_ultima_activacion = 0
 
 def obtener_direccion_iris(ojo_frame):
     """
@@ -95,8 +97,8 @@ while True:
         cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 2)
 
         # Recortar la región del rostro para buscar los ojos dentro
-        roi_gray = gray[y:y+h, x:x+w]
-        roi_color = frame[y:y+h, x:x+w]
+        roi_gray = gray[y:y+int(h/2), x:x+w]
+        roi_color = frame[y:y+int(h/2), x:x+w]
 
         # Detectar ojos
         ojos = eye_cascade.detectMultiScale(roi_gray)
@@ -132,15 +134,22 @@ while True:
                         arduino.write(b'D')
 
                 orden_enviada = True
+                tiempo_ultima_activacion = time.time()
     else:
         # Volvió al centro
         estado_actual = "CENTRO"
         if orden_enviada:
-            # Apagamos los LEDs si vuelve al centro (opcional, dependiendo de lo que pida el profe)
-            print("Mirada al centro, reseteando orden.")
-            if arduino:
-                arduino.write(b'A') # A de Apagar
-        orden_enviada = False
+            # Verificamos si ya pasó 1 segundo desde que se encendió el LED
+            tiempo_desde_activacion = time.time() - tiempo_ultima_activacion
+            if tiempo_desde_activacion >= tiempo_minimo_encendido:
+                # Apagamos los LEDs si vuelve al centro y ya pasó el tiempo mínimo
+                print("Mirada al centro y tiempo cumplido, reseteando orden.")
+                if arduino:
+                    arduino.write(b'A') # A de Apagar
+                orden_enviada = False
+            else:
+                # Aún no pasa un segundo, mantenemos la orden visualmente en el frame
+                cv2.putText(frame, f"MANTENIENDO ORDEN...", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 3)
 
     # Mostrar dirección actual en pantalla
     cv2.putText(frame, f"Detectado: {direccion_detectada}", (50, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
@@ -154,4 +163,7 @@ while True:
 cap.release()
 if arduino:
     arduino.close()
-cv2.destroyAllWindows()
+try:
+    cv2.destroyAllWindows()
+except:
+    pass
