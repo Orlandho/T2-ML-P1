@@ -26,21 +26,20 @@ Tengo que compilar este `.ino` desde el IDE de Arduino (asegurándome de exporta
 
 ## 3. Conectando Python con Proteus (Puertos Seriales Virtuales)
 
-Como Proteus es una simulación y mi Python corre en mi compu real, necesito un "cable virtual" que los conecte. Para eso usé el programa **Virtual Serial Ports Emulator**.
+Como Proteus es una simulación y mi Python corre en mi compu real, necesito un "cable virtual" que los conecte. Para eso usé el programa **Free Virtual Serial Ports** de HHD Software.
 
 **Pasos que seguí:**
-1. Abro el *Virtual Serial Ports Emulator*.
-2. Le doy al botón de **"Create new device"** (el que tiene el ícono de una carpetita con un rayo o estrella).
-3. En Device Type, elijo **"Pair"** (esto crea dos puertos conectados entre sí).
-4. Le doy a *Next* y elijo, por ejemplo, `COM1` y `COM2`.
-5. Le doy a *Finish* y luego al botón de "Play" verde para que empiece a emular.
+1. Abro el *Free Virtual Serial Ports*.
+2. En la ventana principal, voy a la sección para crear un nuevo par de puertos o puente local ("Local Bridge").
+3. Selecciono el primer puerto virtual como **COM3** y el segundo puerto como **COM4**.
+4. Le doy a crear o aplicar ("Create"). Listo, el programa empieza a emular la conexión y el COM3 queda directamente conectado al COM4.
 
 **Configuración en mi código:**
-- En mi script de Python, le puse que se conecte al `COM1`.
+- En mi script de Python, le puse que se conecte al `COM3`.
 
 **Configuración en Proteus:**
 1. En mi diseño de Proteus con el Simulino, tengo que agregar un componente llamado **COMPIM**.
-2. Hago doble clic en el componente COMPIM y lo configuro para que se conecte al `COM2`.
+2. Hago doble clic en el componente COMPIM y lo configuro para que se conecte al `COM4`.
 3. Me tengo que acordar de poner el *Baud Rate* (tanto físico como virtual en las propiedades del COMPIM) a **9600** para que coincida con lo que puse en el Arduino y en Python.
 4. Conecto el pin TXD y RXD del COMPIM a los pines RX y TX del Simulino, respectivamente.
 
